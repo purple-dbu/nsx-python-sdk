@@ -27,7 +27,7 @@ class LogicalSwitchesSDK(object):
         path = LS_PATH + "scopes"
         response = self.http_client.request("GET", path)
         jsondata = json.loads(response.text)
-        scopes = jsondata['allscopes']
+        scopes = jsondata['allScopes']
         for scope in scopes:
             if scope['name'] == scope_name:
                 return scope['id']
