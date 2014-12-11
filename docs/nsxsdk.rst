@@ -20,6 +20,14 @@ nsxsdk.firewall module
     :undoc-members:
     :show-inheritance:
 
+nsxsdk.logicalswitches module
+-----------------------------
+
+.. automodule:: nsxsdk.logicalswitches
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 nsxsdk.utils module
 -------------------
 
