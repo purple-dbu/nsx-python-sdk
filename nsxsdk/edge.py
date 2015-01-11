@@ -6,7 +6,48 @@ import json
 EDGE_PATH = "/api/4.0/edges/"
 
 
-class EdgeSDK(object):
+def _create_basic_configuration(edge_name, datacenter_id,
+                                resourcepool_id, datastore_id,
+                                log_level, host_id,
+                                vmfolder_id):
+    """Create a basic edge configuration for both logical router
+    and service gateway
+
+        :param str edge_name: Name of the edge to be deployed
+        :param str datacenter_id: Id of the datacenter where the edge appliance
+            will be deployed
+        :param str resourcepool_id: Id of the resourcepool where the edge
+            appliance will be deployed
+        :param str datastore_id: Id of the datastore where the edge appliance
+            will be deployed
+        :param str log_level: Edge appliance log level, default is info.
+            Other possible values are emergency, alert, critical, error,
+            warning, notice, debug.
+        :param str host_id: Id of the host where the edge appliance
+            will be deployed
+        :param str vmfolder_id: Id of the folder where the edge appliance
+            will be deployed
+
+        :return: Edge basic configuration
+
+    """
+    edge_data = {}
+    edge_data['datacenterMoid'] = datacenter_id
+    edge_data['name'] = edge_name
+    edge_data['vseLogLevel'] = log_level
+
+    appliance_data = {}
+    appliance_data['resourcePoolId'] = resourcepool_id
+    appliance_data['datastoreId'] = datastore_id
+    if host_id:
+        appliance_data['hostId'] = host_id
+    if vmfolder_id:
+        appliance_data['vmFolderId'] = vmfolder_id
+    edge_data['appliances']['appliances'].append(appliance_data)
+    return edge_data
+
+
+class Edge(object):
 
     """This class provides some functions to deploy and
     configure VMware NSX Edge
@@ -14,6 +55,64 @@ class EdgeSDK(object):
 
     def __init__(self, http_client):
         self.http_client = http_client
+
+    def _is_distributed(self, edge_id):
+        """ Check if edge device is a logical router.
+
+        :param str edge_id: Id of the edge
+
+        :return: True if it is a logical router and False if
+            it is a service gateway.
+        :rtype: bool
+
+        """
+        path = EDGE_PATH + edge_id
+        response = self.http_client.request("GET", path)
+        data = json.loads(response.text)
+        if data['type'] == "distributedRouter":
+            return True
+        return False
+
+    def add_interface(self, edge_id, interface_type, ip_addr, netmask,
+                      network_id, mtu=1500):
+        """Attach a new interface to an existing edge device (Service Gateway
+        or Logical Router)
+
+        :param str edge_id: Id of the edge
+        :param str interface_type: Interface type, possible values are internal
+            or uplink.
+        :param str ip_addr: Interface IP address
+        :param str netmask: Interface netmask
+        :param str network_id: Id of the network (dvportgroup-id
+            or virtualwire-id) on which the new interface need to be connected.
+        :param int mtu: Interface MTU, default is 1500.
+
+        :return: response to the HTTP request
+        :rtype: requests.Response
+
+        """
+        interface_data = {}
+        interface_data['addressGroups'] = {}
+        interface_data['addressGroups']['addressGroups'] = []
+        interface_data['connectedToId'] = network_id
+        interface_data['mtu'] = mtu
+        interface_data['type'] = interface_type
+
+        interface_addressgroup = {}
+        interface_addressgroup['primaryAddress'] = ip_addr
+        interface_addressgroup['netmask'] = netmask
+        interface_data['addressGroups'][
+            'addressGroups'].append(interface_addressgroup)
+
+        path = EDGE_PATH + edge_id
+        if self._is_distributed(edge_id):
+            path = path + "/interfaces/?action=patch"
+        else:
+            path = path + "/vnics/?action=patch"
+
+        data = json.dumps(interface_data)
+        response = self.http_client.request("POST", path, data)
+        return response
 
     def delete_edge(self, edge_id):
         """Delete a NSX Edge
@@ -46,7 +145,7 @@ class EdgeSDK(object):
                 return edge['objectId']
 
     def configure_global_routing(self, edge_id, router_id,
-                                 ecmp=False, log=False):
+                                 ecmp=False, log=False, log_level="info"):
         """Set NSX Edge global routing configuration.
 
         :param str edge_id: Id of the edge to be configured
@@ -55,6 +154,9 @@ class EdgeSDK(object):
             defaults to False.
         :param bool log: enable logging feature if True,
             defaults to False.
+        :param str log_level: Routing feature log level, default is info. Other
+            possible values are emergency, alert, critical, error, warning,
+            notice, debug.
 
         :return: response to the HTTP request
         :rtype: request.Response
@@ -68,7 +170,7 @@ class EdgeSDK(object):
         if log:
             global_data['logging'] = {}
             global_data['logging']['enabled'] = "true"
-            global_data['logging']['logLevel'] = "info"
+            global_data['logging']['logLevel'] = log_level
         data = json.dumps(global_data)
         response = self.http_client.request("PUT", path, data)
         return response
@@ -156,33 +258,6 @@ class EdgeSDK(object):
         response = self.http_client.request("PUT", path, data)
         return response
 
-    def deploy_edge(self, edge_name):
-        """Deploy a NSX Edge with a basic configuration
-
-        :param str edge_name: Name of the edge to be deployed
-
-        :return: response to the HTTP request
-        :rtype: request.Response
-
-        """
-        path = EDGE_PATH
-        edge_data = {}
-        edge_data['datacenterMoid'] = "datacenter-2"
-        edge_data['name'] = edge_name
-        edge_data['vseLogLevel'] = "emergency"
-        edge_data['appliances'] = {}
-        edge_data['appliances']['applianceSize'] = "large"
-        edge_data['appliances']['appliances'] = []
-        appliance_data = {}
-        appliance_data['resourcePoolId'] = "domain-c9"
-        appliance_data['datastoreId'] = "datastore-24"
-        appliance_data['hostId'] = "host-32"
-        appliance_data['vmFolderId'] = "group-v3"
-        edge_data['appliances']['appliances'].append(appliance_data)
-        data = json.dumps(edge_data)
-        response = self.http_client.request("POST", path, data)
-        return response
-
     def configure_ha(self, edge_id):
         """Configure NSX Edge in HA mode.
 
@@ -198,4 +273,179 @@ class EdgeSDK(object):
         ha_data['enabled'] = "true"
         data = json.dumps(ha_data)
         response = self.http_client.request("PUT", path, data)
+        return response
+
+
+class LogicalRouter(Edge):
+
+    def __init__(self, http_client):
+        Edge.__init__(self, http_client)
+
+    def create_edge(self, edge_name, datacenter_id, resourcepool_id,
+                    datastore_id, mgmt_portgroup_id, mgmt_ipaddr,
+                    mgmt_netmask, log_level="info", host_id=None,
+                    vmfolder_id=None):
+        """Deploy a NSX Edge Logical Router with a basic configuration
+
+        :param str edge_name: Name of the edge to be deployed
+        :param str datacenter_id: Id of the datacenter where the edge appliance
+            will be deployed
+        :param str resourcepool_id: Id of the resourcepool where the edge
+            appliance will be deployed
+        :param str datastore_id: Id of the datastore where the edge appliance
+            will be deployed
+        :param str mgmt_portgroup_id: Portgroup Id on which management
+            interface will be connected
+        :param str mgmt_ipaddr: Management interface IP address
+        :param str mgmt_netmask: Management interface netmask
+        :param str log_level: Edge appliance log level, default is info.
+            Other possible values are emergency, alert, critical, error,
+            warning, notice, debug.
+        :param str host_id: Id of the host where the edge appliance
+            will be deployed
+        :param str vmfolder_id: Id of the folder where the edge appliance
+            will be deployed
+
+        :return: response to the HTTP request
+        :rtype: request.Response
+
+        """
+        path = EDGE_PATH
+        edge_data = _create_basic_configuration(edge_name,
+                                                datacenter_id,
+                                                resourcepool_id,
+                                                datastore_id,
+                                                host_id,
+                                                vmfolder_id,
+                                                log_level)
+        edge_data['type'] = "distributedRouter"
+        edge_data['mgmtInterface'] = {}
+        edge_data['mgmtInterface']['connectedToId'] = mgmt_portgroup_id
+        edge_data['mgmtInterface']['addressGroups'] = {}
+        edge_data['mgmtInterface']['addressGroups']['addressGroups'] = []
+        mgmt_configuration = {}
+        mgmt_configuration['primaryAddress'] = mgmt_ipaddr
+        mgmt_configuration['subnetMask'] = mgmt_netmask
+        edge_data['mgmtInterface']['addressGroups'][
+            'addressGroups'].append(mgmt_configuration)
+        data = json.dumps(edge_data)
+        response = self.http_client.request("POST", path, data)
+        return response
+
+    def add_interface(self, edge_id, interface_type, ip_addr, netmask,
+                      network_id, mtu=1500):
+        """Attach a new interface to an existing edge device
+
+        :param str edge_id: Id of the edge
+        :param str interface_type: Interface type, possible values are internal
+            or uplink.
+        :param str ip_addr: Interface IP address
+        :param str netmask: Interface netmask
+        :param str network_id: Id of the network (dvportgroup-id
+            or virtualwire-id) on which the new interface need to be connected.
+        :param int mtu: Interface MTU, default is 1500.
+
+        :return: response to the HTTP request
+        :rtype: requests.Response
+
+        """
+        interface_data = {}
+        interface_data['addressGroups'] = {}
+        interface_data['addressGroups']['addressGroups'] = []
+        interface_data['connectedToId'] = network_id
+        interface_data['mtu'] = mtu
+        interface_data['type'] = interface_type
+
+        interface_addressgroup = {}
+        interface_addressgroup['primaryAddress'] = ip_addr
+        interface_addressgroup['netmask'] = netmask
+        interface_data['addressGroups'][
+            'addressGroups'].append(interface_addressgroup)
+
+        path = EDGE_PATH + edge_id + "/interfaces/?action=patch"
+
+        data = json.dumps(interface_data)
+        response = self.http_client.request("POST", path, data)
+        return response
+
+
+class ServiceGateway(Edge):
+
+    def __init__(self, http_client):
+        Edge.__init__(self, http_client)
+
+    def create_edge(self, edge_name, appliance_size,
+                    datacenter_id, resourcepool_id,
+                    datastore_id, log_level="info", host_id=None,
+                    vmfolder_id=None):
+        """Deploy a NSX Edge Service Gateway with a basic configuration
+
+        :param str edge_name: Name of the edge to be deployed
+        :param str appliance_size: Edge size, could be compact, large,
+            quadlarge or xlarge
+        :param str datacenter_id: Id of the datacenter where the edge appliance
+            will be deployed
+        :param str resourcepool_id: Id of the resourcepool where the edge
+            appliance will be deployed
+        :param str datastore_id: Id of the datastore where the edge appliance
+            will be deployed
+        :param str log_level: Edge appliance log level, default is info.
+            Other possible values are emergency, alert, critical, error,
+            warning, notice, debug.
+        :param str host_id: Id of the host where the edge appliance
+            will be deployed
+        :param str vmfolder_id: Id of the folder where the edge appliance
+            will be deployed
+
+        :return: response to the HTTP request
+        :rtype: request.Response
+
+        """
+        path = EDGE_PATH
+        edge_data = _create_basic_configuration(edge_name,
+                                                datacenter_id,
+                                                resourcepool_id,
+                                                datastore_id,
+                                                host_id,
+                                                vmfolder_id,
+                                                log_level)
+        edge_data['appliances']['applianceSize'] = appliance_size
+        data = json.dumps(edge_data)
+        response = self.http_client.request("POST", path, data)
+        return response
+
+    def add_interface(self, edge_id, interface_type, ip_addr, netmask,
+                      network_id, mtu=1500):
+        """Attach a new interface to an existing edge device
+
+        :param str edge_id: Id of the edge
+        :param str interface_type: Interface type, possible values are internal
+            or uplink.
+        :param str ip_addr: Interface IP address
+        :param str netmask: Interface netmask
+        :param str network_id: Id of the network (dvportgroup-id
+            or virtualwire-id) on which the new interface need to be connected.
+        :param int mtu: Interface MTU, default is 1500.
+
+        :return: response to the HTTP request
+        :rtype: requests.Response
+
+        """
+        interface_data = {}
+        interface_data['addressGroups'] = {}
+        interface_data['addressGroups']['addressGroups'] = []
+        interface_data['connectedToId'] = network_id
+        interface_data['mtu'] = mtu
+        interface_data['type'] = interface_type
+
+        interface_addressgroup = {}
+        interface_addressgroup['primaryAddress'] = ip_addr
+        interface_addressgroup['netmask'] = netmask
+        interface_data['addressGroups'][
+            'addressGroups'].append(interface_addressgroup)
+
+        path = EDGE_PATH + edge_id + "/vnics/?action=patch"
+
+        data = json.dumps(interface_data)
+        response = self.http_client.request("POST", path, data)
         return response

@@ -15,12 +15,12 @@ class LogicalSwitchesSDK(object):
     def __init__(self, http_client):
         self.http_client = http_client
 
-    def get_network_scope_id(self, scope_name):
-        """Retrieve the ID of a network scope from its name
+    def get_transport_zone_id(self, tz_name):
+        """Retrieve Id of a transport zone from its name
 
-        :param str scope_name: The name of the network scope to get.
+        :param str tz_name: The name of the transport zone.
 
-        :return: Id of the network scope
+        :return: Id of the transport zone
         :rtype: str
 
         """
@@ -29,23 +29,26 @@ class LogicalSwitchesSDK(object):
         jsondata = json.loads(response.text)
         scopes = jsondata['allScopes']
         for scope in scopes:
-            if scope['name'] == scope_name:
+            if scope['name'] == tz_name:
                 return scope['id']
 
-    def add_logical_switch(self, scope_id, ls_name):
-        """Create a new logical switch on the specified network scope.
+    def create_logical_switch(self, tz_id, ls_name, cplane_mode=None,
+                              tenant_id="default"):
+        """Create a new logical switch in the specified transport zone.
 
-        :param str scope_id: Id of the network scope (Transport Zone)
+        :param str tz_id: Id of the transport zone
         :param str ls_name: Logical switch name
 
         :return: response to the HTTP request
         :rtype: requests.Response
 
         """
-        path = LS_PATH + "scopes/" + scope_id + "/virtualwires"
+        path = LS_PATH + "scopes/" + tz_id + "/virtualwires"
         ls_data = {}
         ls_data['name'] = ls_name
-        ls_data['tenantId'] = "virtual wire tenant"
+        ls_data['tenantId'] = tenant_id
+        if cplane_mode:
+            ls_data['controlPlaneMode'] = cplane_mode
         data = json.dumps(ls_data)
         response = self.http_client.request("POST", path, data)
         return response

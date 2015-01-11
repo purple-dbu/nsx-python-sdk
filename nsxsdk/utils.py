@@ -48,7 +48,6 @@ class HTTPClient(object):
         :param path: API resource path
         :param body: HTTP request body
         :param headers: Extra headers
-        :param timestamp: formatted date to display
 
         :return: return description
         :rtype: the return type description
