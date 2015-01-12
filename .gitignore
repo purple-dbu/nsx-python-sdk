@@ -41,4 +41,3 @@ output/*/index.html
 docs/_build
 
 # Test
-test/test_nsxsdk.py
