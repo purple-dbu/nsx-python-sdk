@@ -2,11 +2,12 @@
 """Module VMware NSX Distributed Firewall"""
 
 import json
+import nsxsdk.utils as utils
 
 DFW_PATH = "/api/4.0/firewall/"
 
 
-class FirewallSDK(object):
+class DistributedFirewall(object):
 
     """This class provides some functions to configure
     the distributed firewall
@@ -25,7 +26,7 @@ class FirewallSDK(object):
 
         """
         path = DFW_PATH + "globalroot-0/config"
-        response = self.http_client.request("GET", path)
+        response = self.http_client.request(utils.HTTP_GET, path)
         jsondata = json.loads(response.text)
         sections = jsondata['layer3Sections']['layer3Sections']
         for section in sections:
@@ -46,7 +47,7 @@ class FirewallSDK(object):
         section_data['name'] = section_name
         section_data['rules'] = []
         data = json.dumps(section_data)
-        response = self.http_client.request("POST", path, data)
+        response = self.http_client.request(utils.HTTP_POST, path, data)
         return response
 
     def delete_firewall_section(self, section_id):
@@ -60,7 +61,7 @@ class FirewallSDK(object):
         """
         path = DFW_PATH + "globalroot-0/config/layer3sections/" + \
             str(section_id)
-        response = self.http_client.request("DELETE", path)
+        response = self.http_client.request(utils.HTTP_DELETE, path)
         return response
 
     def add_firewall_rule(self, section_id, source_ip,
@@ -78,7 +79,7 @@ class FirewallSDK(object):
         """
         path = DFW_PATH + "globalroot-0/config/layer3sections/" + \
             str(section_id)
-        response = self.http_client.request("GET", path)
+        response = self.http_client.request(utils.HTTP_GET, path)
         headers = {'If-Match': response.headers['ETag']}
 
         path = DFW_PATH + "globalroot-0/config/layer3sections/" + \
@@ -116,5 +117,9 @@ class FirewallSDK(object):
         rule_data['destinations']['destinationList'].append(destination_data)
 
         data = json.dumps(rule_data)
-        response = self.http_client.request("POST", path, data, headers)
+        response = self.http_client.request(
+            utils.HTTP_POST,
+            path,
+            data,
+            headers)
         return response

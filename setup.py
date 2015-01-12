@@ -23,7 +23,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 setup(
     name='nsxsdk',
-    version='0.1.1',
+    version='0.0.1',
     description='NSX for vSphere SDK',
     long_description=readme + '\n\n' + doclink + '\n\n' + history,
     author='Remi Vichery',

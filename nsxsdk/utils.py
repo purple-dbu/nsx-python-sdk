@@ -5,10 +5,15 @@ import requests
 import json
 import sys
 
+HTTP_GET = "GET"
+HTTP_POST = "POST"
+HTTP_PUT = "PUT"
+HTTP_DELETE = "DELETE"
 
-class HTTPClient(object):
 
-    """HTTPClient have the following properties:
+class NSXClient(object):
+
+    """NSXClient have the following properties:
 
     Attributes:
         base_url: A string representing the base url.
