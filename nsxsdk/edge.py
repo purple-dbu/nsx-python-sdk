@@ -31,22 +31,23 @@ class Edge(object):
         """Create a basic edge configuration for both logical router
         and service gateway
 
-            :param str edge_name: Name of the edge to be deployed
-            :param str datacenter_id: Id of the datacenter where the
-                edge appliance will be deployed
-            :param str resourcepool_id: Id of the resourcepool where the edge
-                appliance will be deployed
-            :param str datastore_id: Id of the datastore where
-                the edge appliance will be deployed
-            :param str log_level: Edge appliance log level, default is info.
-                Other possible values are emergency, alert, critical, error,
-                warning, notice, debug.
-            :param str host_id: Id of the host where the edge appliance
-                will be deployed
-            :param str vmfolder_id: Id of the folder where the edge appliance
-                will be deployed
+        :param str edge_name: Name of the edge to be deployed
+        :param str datacenter_id: Id of the datacenter where the
+            edge appliance will be deployed
+        :param str resourcepool_id: Id of the resourcepool where the edge
+            appliance will be deployed
+        :param str datastore_id: Id of the datastore where
+            the edge appliance will be deployed
+        :param str log_level: Edge appliance log level, default is info.
+            Other possible values are emergency, alert, critical, error,
+            warning, notice, debug.
+        :param str host_id: Id of the host where the edge appliance
+            will be deployed
+        :param str vmfolder_id: Id of the folder where the edge appliance
+            will be deployed
 
-            :return: Edge basic configuration
+        :return: Edge basic configuration
+
         """
         edge_data = {}
         edge_data['datacenterMoid'] = datacenter_id
@@ -81,7 +82,7 @@ class Edge(object):
     def add_interface(self, interface_type, ip_addr, netmask,
                       network_id, mtu=1500):
         """Attach a new interface to an existing edge device (Service Gateway
-        or Logical Router)
+            or Logical Router)
 
         :param str interface_type: Interface type, possible values are internal
             or uplink.
@@ -151,8 +152,7 @@ class Edge(object):
             raise Exception
 
     def delete(self):
-        """Delete a NSX Edge
- that will be deleted
+        """Delete NSX Edge
 
         :return: response to the HTTP request
         :rtype: requests.Response
@@ -165,7 +165,7 @@ class Edge(object):
     def configure_global_routing(self, router_id,
                                  ecmp=False, log=False, log_level="info"):
         """Set NSX Edge global routing configuration.
- to be configured
+
         :param str router_id: Unique router id
         :param bool ecmp: enable ECMP feature if True,
             defaults to False.
@@ -195,7 +195,7 @@ class Edge(object):
     def add_bgp_peer(self, peer_ip, peer_as, weight=None,
                      holddown_timer=None, keepalive_timer=None):
         """Add a bgp remote peer to an existing NSX Edge.
- to be reconfigured
+
         :param str peer_ip: BGP remote peer IP address
         :param int peer_as: BGP remote peer AS number
         :param int weight: weight apply to routes learned from this peer
@@ -228,8 +228,8 @@ class Edge(object):
     def configure_bgp(self, local_as, graceful_restart=False,
                       default_originate=False):
         """Configure BGP basic parameters such as Local AS, graceful restart
-        and default originate.
- to be reconfigured
+            and default originate.
+
         :param int local_as: BGP local AS
         :param bool graceful_restart: enable graceful restart feature if True,
             defaults to False.
@@ -254,7 +254,7 @@ class Edge(object):
 
     def configure_syslog(self, ip_address, protocol):
         """Configure edge to send log to remote syslog
- to be reconfigured
+            to be reconfigured
         :param str ip_address: IP address of the remote syslog
         :param str protocol: Syslog transport protocol ("udp" or "tcp")
 
@@ -277,7 +277,6 @@ class Edge(object):
 
     def configure_ha(self):
         """Configure NSX Edge in HA mode.
- to be reconfigured
 
         :return: response to the HTTP request
         :rtype: request.Response

@@ -18,13 +18,13 @@ doclink = """
 Documentation
 -------------
 
-The full documentation is at http://nsxsdk.rtfd.org."""
+The full documentation is at http://nsx-python-sdk.rtfd.org."""
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 setup(
-    name='nsxsdk',
+    name='nsx-python-sdk',
     version='0.0.1',
-    description='NSX for vSphere SDK',
+    description='NSX for vSphere Python SDK',
     long_description=readme + '\n\n' + doclink + '\n\n' + history,
     author='Remi Vichery',
     author_email='remi.vichery@gmail.com',
