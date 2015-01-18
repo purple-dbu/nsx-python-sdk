@@ -20,10 +20,18 @@ nsxsdk.firewall module
     :undoc-members:
     :show-inheritance:
 
-nsxsdk.logicalswitches module
------------------------------
+nsxsdk.logicalswitch module
+---------------------------
 
-.. automodule:: nsxsdk.logicalswitches
+.. automodule:: nsxsdk.logicalswitch
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+nsxsdk.securitygroup module
+---------------------------
+
+.. automodule:: nsxsdk.securitygroup
     :members:
     :undoc-members:
     :show-inheritance:

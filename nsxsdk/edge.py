@@ -2,9 +2,13 @@
 """Module VMware NSX Edge"""
 
 import json
+import logging
+
 import nsxsdk.utils as utils
 
 EDGE_PATH = "/api/4.0/edges/"
+
+log = logging.getLogger(__name__)
 
 
 class Edge(object):
@@ -14,6 +18,7 @@ class Edge(object):
     """
 
     def __init__(self, http_client, edge_id=None):
+        self.log = logging.getLogger(__name__ + "." + self.__class__.__name__)
         self.http_client = http_client
         if edge_id:
             self.edge_id = edge_id

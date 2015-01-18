@@ -4,11 +4,14 @@
 import requests
 import json
 import sys
+import logging
 
 HTTP_GET = "GET"
 HTTP_POST = "POST"
 HTTP_PUT = "PUT"
 HTTP_DELETE = "DELETE"
+
+log = logging.getLogger(__name__)
 
 
 class NSXClient(object):
@@ -23,10 +26,17 @@ class NSXClient(object):
     """
 
     def __init__(self, hostname, login, password):
+        self.log = logging.getLogger(__name__ + "." + self.__class__.__name__)
         self.base_url = "https://" + hostname
         self.login = login
         self.password = password
         self.session = self._initialize_session()
+        self.log.info("NSXClient created")
+        self.log.debug(
+            "NSX Client url=%s login=%s password=%s",
+            self.base_url,
+            self.login,
+            self.password)
 
     def _initialize_session(self):
         """Initialize HTTP session with a basic configuration to consume

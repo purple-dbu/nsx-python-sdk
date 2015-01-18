@@ -2,9 +2,13 @@
 """Module VMware NSX Logical Switches"""
 
 import json
+import logging
+
 import nsxsdk.utils as utils
 
 LS_PATH = "/api/2.0/vdn/"
+
+log = logging.getLogger(__name__)
 
 
 class LogicalSwitch(object):
@@ -14,6 +18,7 @@ class LogicalSwitch(object):
     """
 
     def __init__(self, http_client, ls_id=None):
+        self.log = logging.getLogger(__name__ + "." + self.__class__.__name__)
         self.http_client = http_client
         if ls_id:
             self.ls_id = ls_id

@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 """Module VMware NSX Security Group"""
 
+import logging
+
 import nsxsdk.utils as utils
 
 SG_PATH = "/api/2.0/services/securitygroup/"
+
+log = logging.getLogger(__name__)
 
 
 class SecurityGroup(object):
@@ -12,6 +16,7 @@ class SecurityGroup(object):
     """
 
     def __init__(self, http_client, securitygroup_id=None):
+        self.log = logging.getLogger(__name__ + "." + self.__class__.__name__)
         self.http_client = http_client
         if securitygroup_id:
             self.securitygroup_id = securitygroup_id

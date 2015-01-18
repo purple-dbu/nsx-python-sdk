@@ -2,9 +2,13 @@
 """Module VMware NSX Distributed Firewall"""
 
 import json
+import logging
+
 import nsxsdk.utils as utils
 
 DFW_PATH = "/api/4.0/firewall/"
+
+log = logging.getLogger(__name__)
 
 
 class DistributedFirewall(object):
@@ -14,6 +18,7 @@ class DistributedFirewall(object):
     """
 
     def __init__(self, http_client):
+        self.log = logging.getLogger(__name__ + "." + self.__class__.__name__)
         self.http_client = http_client
 
     def get_firewall_section_id(self, section_name):
