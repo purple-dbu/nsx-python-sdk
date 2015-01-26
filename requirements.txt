@@ -11,4 +11,3 @@ requests==2.5.1
 six==1.9.0
 vcrpy==1.2.0
 wrapt==1.10.2
-wsgiref==0.1.2
