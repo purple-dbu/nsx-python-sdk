@@ -28,7 +28,7 @@ lint:
 	pep8 nsxsdk
 
 test:
-	py.test
+	py.test test
 
 test-all:
 	tox

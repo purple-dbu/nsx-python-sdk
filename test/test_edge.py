@@ -6,7 +6,7 @@ import vcr
 import logging
 
 import nsxsdk
-import credentials
+from . import credentials
 
 myvcr = vcr.VCR(
     cassette_library_dir='test/fixtures/cassettes/edge',

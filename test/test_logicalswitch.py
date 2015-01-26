@@ -8,7 +8,7 @@ import logging
 import nsxsdk.utils
 import nsxsdk.logicalswitch as logicalswitch
 import nsxsdk.exceptions as nsxexceptions
-import credentials
+from . import credentials
 
 FIXTURES_PATH = "test/fixtures/cassettes/logicalswitch"
 
