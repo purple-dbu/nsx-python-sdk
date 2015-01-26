@@ -12,6 +12,14 @@ nsxsdk.edge module
     :undoc-members:
     :show-inheritance:
 
+nsxsdk.exceptions module
+------------------------
+
+.. automodule:: nsxsdk.exceptions
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 nsxsdk.firewall module
 ----------------------
 

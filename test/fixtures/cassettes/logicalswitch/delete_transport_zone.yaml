@@ -1,0 +1,23 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: [application/json]
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-Length: ['0']
+      Content-type: [application/json]
+      User-Agent: [python-requests/2.5.1 CPython/2.7.6 Darwin/14.0.0]
+    method: DELETE
+    uri: https://pf-nsx-nsxm.rvichery.com:8443/api/2.0/vdn/scopes/vdnscope-2
+  response:
+    body: {string: !!python/unicode ''}
+    headers:
+      cache-control: [private, no-cache]
+      content-length: ['0']
+      date: ['Sun, 25 Jan 2015 17:36:51 GMT']
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: ['']
+      set-cookie: [JSESSIONID=58B1185952B7CB9038739CE765660AEE; Path=/]
+    status: {code: 200, message: OK}
+version: 1

@@ -24,8 +24,8 @@ clean-pyc:
 	find . -name '*~' -exec rm -f {} +
 
 lint:
-	pylint nsxsdk test
-	pep8 nsxsdk test
+	pylint nsxsdk
+	pep8 nsxsdk
 
 test:
 	py.test

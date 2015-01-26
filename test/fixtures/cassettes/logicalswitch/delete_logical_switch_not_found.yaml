@@ -1,0 +1,25 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: [application/json]
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-Length: ['0']
+      Content-type: [application/json]
+      User-Agent: [python-requests/2.5.1 CPython/2.7.6 Darwin/14.0.0]
+    method: DELETE
+    uri: https://pf-nsx-nsxm.rvichery.com:8443/api/2.0/vdn/virtualwires/virtualwire-200
+  response:
+    body: {string: !!python/unicode '{"details":"The requested object : virtualwire-200
+        could not be found. Object identifiers are case sensitive.","errorCode":202,"moduleName":"core-services"}'}
+    headers:
+      cache-control: [private, no-cache]
+      content-type: [application/json]
+      date: ['Sun, 25 Jan 2015 21:54:38 GMT']
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: ['']
+      set-cookie: [JSESSIONID=49966D510DC272B7B09671105C03C55F; Path=/]
+      transfer-encoding: [chunked]
+    status: {code: 404, message: Not Found}
+version: 1

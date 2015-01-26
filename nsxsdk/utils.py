@@ -2,16 +2,19 @@
 """Utils module for NSX SDK"""
 
 import requests
-import json
-import sys
 import logging
+import json
+
+import nsxsdk.exceptions as exceptions
 
 HTTP_GET = "GET"
 HTTP_POST = "POST"
 HTTP_PUT = "PUT"
 HTTP_DELETE = "DELETE"
 
-log = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
+
+requests.packages.urllib3.disable_warnings()
 
 
 class NSXClient(object):
@@ -26,14 +29,17 @@ class NSXClient(object):
     """
 
     def __init__(self, hostname, login, password):
-        self.log = logging.getLogger(__name__ + "." + self.__class__.__name__)
+        self.logger = logging.getLogger(
+            __name__ +
+            "." +
+            self.__class__.__name__)
         self.base_url = "https://" + hostname
         self.login = login
         self.password = password
         self.session = self._initialize_session()
-        self.log.info("NSXClient created")
-        self.log.debug(
-            "NSX Client url=%s login=%s password=%s",
+        self.logger.info("NSXClient created")
+        self.logger.debug(
+            "url=%s login=%s password=%s",
             self.base_url,
             self.login,
             self.password)
@@ -69,28 +75,32 @@ class NSXClient(object):
 
         """
         url = self.base_url + path
-        print "Method: " + method + ", URL: " + url
-
-        if body is not None:
-            print json.dumps(
-                json.loads(body),
-                sort_keys=True,
-                indent=4,
-                separators=(
-                    ',',
-                    ': '))
-
+        self.logger.info("Request: %s %s", method, url)
+        if headers:
+            self.logger.debug("Request headers: %s", headers)
+        if body:
+            self.logger.debug("Request body: %s", body)
+        response = None
         try:
             response = self.session.request(
                 method,
                 url,
                 data=body,
                 headers=headers)
-            print "Status code: " + str(response.status_code)
+            response.raise_for_status()
+            self.logger.info(
+                "Response: %s %s",
+                response.status_code,
+                response.reason)
             return response
-        except requests.exceptions.HTTPError as exception:
-            print "HTTPError: " + exception
-            sys.exit(1)
         except requests.exceptions.RequestException as exception:
-            print exception
-            sys.exit(1)
+            self.logger.critical("%s %s - %s", method, url, exception)
+            if response.status_code == 404:
+                raise exceptions.ResourceNotFound(url)
+            if response.status_code == 400:
+                responsedata = json.loads(response.text)
+                raise exceptions.IncorrectRequest(responsedata['details'])
+        finally:
+            if response is not None:
+                self.logger.debug("Response headers: %s", response.headers)
+                self.logger.debug("Response body: %s", response.text)

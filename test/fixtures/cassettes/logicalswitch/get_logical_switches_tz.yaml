@@ -1,0 +1,24 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: [application/json]
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-type: [application/json]
+      User-Agent: [python-requests/2.5.1 CPython/2.7.6 Darwin/14.0.0]
+    method: GET
+    uri: https://pf-nsx-nsxm.rvichery.com:8443/api/2.0/vdn/scopes/vdnscope-3/virtualwires
+  response:
+    body: {string: !!python/unicode '{"dataPage":{"pagingInfo":{"pageSize":20,"startIndex":0,"totalCount":1,"sortOrderAscending":true},"data":[{"objectId":"virtualwire-25","objectTypeName":"VirtualWire","vsmUuid":"4234CE32-678C-4A9E-3E66-8D309294123F","revision":2,"type":{"name":"VirtualWire"},"name":"ls_test_tz","description":"","clientHandle":"","extendedAttributes":[],"tenantId":"virtual
+        wire tenant","vdnScopeId":"vdnscope-3","backing":[{"switchObj":{"objectId":"dvs-27","objectTypeName":"VmwareDistributedVirtualSwitch","vsmUuid":"4234CE32-678C-4A9E-3E66-8D309294123F","revision":39,"type":{"name":"VmwareDistributedVirtualSwitch"},"name":"Edge-VDS1","scope":{"id":"datacenter-2","objectTypeName":"Datacenter","name":"DC"},"clientHandle":"","extendedAttributes":[]},"mtu":9000,"promiscuousMode":false,"backingType":"portgroup","backingValue":"dvportgroup-3585"}],"vdnId":5016,"multicastAddr":"239.0.0.16","guestVlanAllowed":false,"controlPlaneMode":"HYBRID_MODE"}]}}'}
+    headers:
+      cache-control: [private, no-cache]
+      content-type: [application/json]
+      date: ['Sun, 25 Jan 2015 21:59:39 GMT']
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: ['']
+      set-cookie: [JSESSIONID=BDDD6FE07E92FF740AEE2ACB0AD0FCDF; Path=/]
+      transfer-encoding: [chunked]
+    status: {code: 200, message: OK}
+version: 1

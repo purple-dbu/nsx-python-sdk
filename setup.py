@@ -28,13 +28,14 @@ setup(
     long_description=readme + '\n\n' + doclink + '\n\n' + history,
     author='Remi Vichery',
     author_email='remi.vichery@gmail.com',
-    url='https://github.com/rvichery/nsxsdk',
+    url='https://github.com/rvichery/nsx-python-sdk',
     packages=[
         'nsxsdk',
     ],
     package_dir={'nsxsdk': 'nsxsdk'},
     include_package_data=True,
     install_requires=[
+        'requests'
     ],
     license='MIT',
     zip_safe=False,

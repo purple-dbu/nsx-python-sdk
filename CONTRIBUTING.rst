@@ -36,8 +36,8 @@ is open to whoever wants to implement it.
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-nsxsdk could always use more documentation, whether as part of the 
-official nsxsdk docs, in docstrings, or even on the web in blog posts,
+NSX for vSphere Python SDK could always use more documentation, whether as part of the
+official nsx-python-sdk docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 Submit Feedback
@@ -58,7 +58,7 @@ Get Started!
 Ready to contribute? Here's how to set up `nsx-python-sdk` for
 local development.
 
-1. Fork_ the `nsx-python-sdk` repo on GitHub.
+1. Fork the `nsx-python-sdk` repo on GitHub.
 2. Clone your fork locally::
 
     $ git clone git@github.com:your_name_here/nsx-python-sdk.git

@@ -1,0 +1,25 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: [application/json]
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-Length: ['0']
+      Content-type: [application/json]
+      User-Agent: [python-requests/2.5.1 CPython/2.7.6 Darwin/14.0.0]
+    method: DELETE
+    uri: https://pf-nsx-nsxm.rvichery.com:8443/api/2.0/vdn/scopes/vdnscope-3
+  response:
+    body: {string: !!python/unicode '{"details":"Transport zone vdnscope-3 is in use.
+        All dependent logical switches must be removed prior to deletion.","errorCode":812,"moduleName":"core-services"}'}
+    headers:
+      cache-control: [private, no-cache]
+      connection: [close]
+      content-type: [application/json]
+      date: ['Sun, 25 Jan 2015 21:44:34 GMT']
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: ['']
+      set-cookie: [JSESSIONID=8A26F66FF91097C7CB165D979D662063; Path=/]
+    status: {code: 400, message: Bad Request}
+version: 1

@@ -5,10 +5,11 @@ import json
 import logging
 
 import nsxsdk.utils as utils
+import nsxsdk.exceptions as exceptions
 
 LS_PATH = "/api/2.0/vdn/"
 
-log = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class LogicalSwitch(object):
@@ -18,40 +19,65 @@ class LogicalSwitch(object):
     """
 
     def __init__(self, http_client, ls_id=None):
-        self.log = logging.getLogger(__name__ + "." + self.__class__.__name__)
+        self.logger = logging.getLogger(
+            __name__ +
+            "." +
+            self.__class__.__name__)
         self.http_client = http_client
         if ls_id:
             self.ls_id = ls_id
 
-    @staticmethod
-    def get_transport_zone_id(http_client, tz_name):
+    def get_transport_zones(self):
+        """Retrieve all transport zones
+
+        :return: List of transport zones
+        :rtype: dict
+
+        """
+        path = LS_PATH + "scopes"
+        response = self.http_client.request(utils.HTTP_GET, path)
+        jsondata = json.loads(response.text)
+        transportzones = jsondata['allScopes']
+        return transportzones
+
+    def get_transport_zone_id(self, tz_name):
         """Retrieve Id of a transport zone from its name
 
-        :param NSXClient http_client: NSX client used to
-            retrieve transport zone Id.
         :param str tz_name: The name of the transport zone.
 
         :return: Id of the transport zone
         :rtype: str
 
-        """
-        path = LS_PATH + "scopes"
-        response = http_client.request(utils.HTTP_GET, path)
-        jsondata = json.loads(response.text)
-        scopes = jsondata['allScopes']
-        for scope in scopes:
-            if scope['name'] == tz_name:
-                return scope['id']
+        :raises nsxsdk.exceptions.ResourceNotFound: If transport
+            zone "tz_name" does not exist.
 
-    def create(self, tz_id, ls_name, cplane_mode=None,
-               tenant_id="default"):
-        """Create a new logical switch in the specified transport zone.
+        """
+        transportzones = self.get_transport_zones()
+        for transportzone in transportzones:
+            if transportzone['name'] == tz_name:
+                return transportzone['id']
+        raise exceptions.ResourceNotFound(tz_name)
+
+    def delete_transport_zone(self, tz_id):
+        """Delete a transport zone
+
+        :param str tz_id: Id of the transport zone that will be deleted
+
+        """
+        path = LS_PATH + "scopes/" + tz_id
+        self.http_client.request(utils.HTTP_DELETE, path)
+
+    def create_logical_switch(self, tz_id, ls_name, cplane_mode=None,
+                              tenant_id="default"):
+        """Create a new logical switch on the specified transport zone.
 
         :param str tz_id: Id of the transport zone
         :param str ls_name: Logical switch name
+        :param str cplane_mode: Default is Transport Zone control plane mode
+        :param str tenant_id: Logical Switch tenant id/name
 
-        :return: response to the HTTP request
-        :rtype: requests.Response
+        :return: Id of the logical switch
+        :rtype: str
 
         """
         path = LS_PATH + "scopes/" + tz_id + "/virtualwires"
@@ -62,17 +88,32 @@ class LogicalSwitch(object):
             ls_data['controlPlaneMode'] = cplane_mode
         data = json.dumps(ls_data)
         response = self.http_client.request(utils.HTTP_POST, path, data)
-        return response
+        return response.text
 
-    def delete(self):
-        """Delete a logical switch
+    def delete_logical_switch(self, ls_id):
+        """Delete a logical switch.
 
         :param str ls_id: Id of the logical switch that will be deleted
 
-        :return: response to the HTTP request
-        :rtype: requests.Response
+        """
+        path = LS_PATH + "virtualwires/" + ls_id
+        self.http_client.request(utils.HTTP_DELETE, path)
+
+    def get_logical_switches(self, tz_id=None):
+        """Retrieve all logical switches or retrieve all logical switches
+        on the specified transport zone.
+
+        :param str tz_id: (Optional) Id of the Transport Zone
+
+        :return: List of logical switches
+        :rtype: dict
 
         """
-        path = LS_PATH + "virtualwires/" + self.ls_id
-        response = self.http_client.request(utils.HTTP_DELETE, path)
-        return response
+        if tz_id:
+            path = LS_PATH + "scopes/" + tz_id + "/virtualwires"
+        else:
+            path = LS_PATH + "virtualwires"
+        response = self.http_client.request(utils.HTTP_GET, path)
+        jsondata = json.loads(response.text)
+        transportzones = jsondata['dataPage']['data']
+        return transportzones

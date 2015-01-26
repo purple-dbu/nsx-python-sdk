@@ -8,7 +8,7 @@ import nsxsdk.utils as utils
 
 EDGE_PATH = "/api/4.0/edges/"
 
-log = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class Edge(object):
@@ -18,7 +18,10 @@ class Edge(object):
     """
 
     def __init__(self, http_client, edge_id=None):
-        self.log = logging.getLogger(__name__ + "." + self.__class__.__name__)
+        self.logger = logging.getLogger(
+            __name__ +
+            "." +
+            self.__class__.__name__)
         self.http_client = http_client
         if edge_id:
             self.edge_id = edge_id
@@ -75,60 +78,18 @@ class Edge(object):
         path = EDGE_PATH + self.edge_id
         response = self.http_client.request(utils.HTTP_GET, path)
         data = json.loads(response.text)
-        if data['type'] == "distributedRouter":
-            return True
-        return False
-
-    def add_interface(self, interface_type, ip_addr, netmask,
-                      network_id, mtu=1500):
-        """Attach a new interface to an existing edge device (Service Gateway
-            or Logical Router)
-
-        :param str interface_type: Interface type, possible values are internal
-            or uplink.
-        :param str ip_addr: Interface IP address
-        :param str netmask: Interface netmask
-        :param str network_id: Id of the network (dvportgroup-id
-            or virtualwire-id) on which the new interface need to be connected.
-        :param int mtu: Interface MTU, default is 1500.
-
-        :return: response to the HTTP request
-        :rtype: requests.Response
-
-        """
-        interface_data = {}
-        interface_data['addressGroups'] = {}
-        interface_data['addressGroups']['addressGroups'] = []
-        interface_data['connectedToId'] = network_id
-        interface_data['mtu'] = mtu
-        interface_data['type'] = interface_type
-
-        interface_addressgroup = {}
-        interface_addressgroup['primaryAddress'] = ip_addr
-        interface_addressgroup['netmask'] = netmask
-        interface_data['addressGroups'][
-            'addressGroups'].append(interface_addressgroup)
-
-        path = EDGE_PATH + self.edge_id
-        if self._is_distributed():
-            path = path + "/interfaces/?action=patch"
-        else:
-            path = path + "/vnics/?action=patch"
-
-        data = json.dumps(interface_data)
-        response = self.http_client.request(utils.HTTP_POST, path, data)
-        return response
+        return data['type'] == "distributedRouter"
 
     @staticmethod
-    def get_edge_id(http_client, edge_name):
+    def get_edge_by_name(http_client, edge_name):
         """Retrieve the ID of a NSX Edge from its name
 
         :param NSXClient http_client: NSX client used to
             retrieve edge Id.
         :param str edge_name: The name of the edge to retrieve.
 
-        :return: Id of the edge
-        :rtype: str
+        :return:
+        :rtype: nsxsdk.edge.Edge
 
         """
         path = EDGE_PATH
@@ -137,7 +98,8 @@ class Edge(object):
         edges = jsondata['edgePage']['data']
         for edge in edges:
             if edge['name'] == edge_name:
-                return edge['objectId']
+                return Edge(http_client, edge['objectId'])
+        raise Exception('Edge %s does not exist')
 
     def get_id(self):
         """Return NSX Edge Id.
@@ -293,6 +255,10 @@ class Edge(object):
 
 class LogicalRouter(Edge):
 
+    """This class provides some functions to deploy and
+    configure VMware NSX Distributed Logical Router
+    """
+
     def __init__(self, http_client):
         Edge.__init__(self, http_client)
 
@@ -384,6 +350,10 @@ class LogicalRouter(Edge):
 
 
 class ServiceGateway(Edge):
+
+    """This class provides some functions to deploy and
+    configure VMware NSX Edge Service Gateway
+    """
 
     def __init__(self, http_client, edge_id=None):
         Edge.__init__(self, http_client, edge_id)

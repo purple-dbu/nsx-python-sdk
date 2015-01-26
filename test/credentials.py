@@ -2,4 +2,4 @@
 """NSX Manager credentials"""
 
 login = "admin"
-password = "admin"
+password = "Adm!n"

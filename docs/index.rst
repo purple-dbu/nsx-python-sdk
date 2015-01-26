@@ -13,6 +13,7 @@ Contents:
 
    installation
    usage
+   modules
    contributing
    authors
    history
@@ -20,8 +21,8 @@ Contents:
 Feedback
 ========
 
-If you have any suggestions or questions about **nsxsdk** feel free to email me
+If you have any suggestions or questions about **nsx-python-sdk* feel free to email me
 at remi.vichery@gmail.com.
 
-If you encounter any errors or problems with **nsxsdk**, please let me know!
-Open an Issue at the GitHub http://github.com/rvichery/nsxsdk main repository.
+If you encounter any errors or problems with **nsx-python-sdk**, please let me know!
+Open an Issue at the GitHub http://github.com/rvichery/nsx-python-sdk main repository.

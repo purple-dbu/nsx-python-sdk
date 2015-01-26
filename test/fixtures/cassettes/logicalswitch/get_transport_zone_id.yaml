@@ -1,0 +1,23 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: [application/json]
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-type: [application/json]
+      User-Agent: [python-requests/2.5.1 CPython/2.7.6 Darwin/14.0.0]
+    method: GET
+    uri: https://pf-nsx-nsxm.rvichery.com:8443/api/2.0/vdn/scopes
+  response:
+    body: {string: !!python/unicode '{"allScopes":[{"objectId":"vdnscope-1","objectTypeName":"VdnScope","vsmUuid":"4234CE32-678C-4A9E-3E66-8D309294123F","revision":3,"type":{"name":"VdnScope"},"name":"tz","description":"","clientHandle":"","extendedAttributes":[],"id":"vdnscope-1","clusters":{"clusters":[{"cluster":{"objectId":"domain-c9","objectTypeName":"ClusterComputeResource","vsmUuid":"4234CE32-678C-4A9E-3E66-8D309294123F","revision":41,"type":{"name":"ClusterComputeResource"},"name":"Edge","scope":{"id":"datacenter-2","objectTypeName":"Datacenter","name":"DC"},"clientHandle":"","extendedAttributes":[]}},{"cluster":{"objectId":"domain-c165","objectTypeName":"ClusterComputeResource","vsmUuid":"4234CE32-678C-4A9E-3E66-8D309294123F","revision":23,"type":{"name":"ClusterComputeResource"},"name":"Compute02","scope":{"id":"datacenter-2","objectTypeName":"Datacenter","name":"DC"},"clientHandle":"","extendedAttributes":[]}},{"cluster":{"objectId":"domain-c7","objectTypeName":"ClusterComputeResource","vsmUuid":"4234CE32-678C-4A9E-3E66-8D309294123F","revision":40,"type":{"name":"ClusterComputeResource"},"name":"Compute01","scope":{"id":"datacenter-2","objectTypeName":"Datacenter","name":"DC"},"clientHandle":"","extendedAttributes":[]}}]},"virtualWireCount":23,"controlPlaneMode":"HYBRID_MODE"}]}'}
+    headers:
+      cache-control: [private, no-cache]
+      content-type: [application/json]
+      date: ['Fri, 23 Jan 2015 22:26:13 GMT']
+      expires: ['Thu, 01 Jan 1970 00:00:00 GMT']
+      server: ['']
+      set-cookie: [JSESSIONID=033D30AA0484BE8553DED58B584F9AAF; Path=/]
+      transfer-encoding: [chunked]
+    status: {code: 200, message: OK}
+version: 1

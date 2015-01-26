@@ -8,7 +8,7 @@ import nsxsdk.utils as utils
 
 DFW_PATH = "/api/4.0/firewall/"
 
-log = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class DistributedFirewall(object):
@@ -18,11 +18,14 @@ class DistributedFirewall(object):
     """
 
     def __init__(self, http_client):
-        self.log = logging.getLogger(__name__ + "." + self.__class__.__name__)
+        self.logger = logging.getLogger(
+            __name__ +
+            "." +
+            self.__class__.__name__)
         self.http_client = http_client
 
     def get_firewall_section_id(self, section_name):
-        """Retrieve the ID of a firewall section from its name
+        """Retrieve ID of a firewall section from its name
 
         :param str section_name: The name of the firewall section to get.
 
@@ -39,7 +42,7 @@ class DistributedFirewall(object):
                 return section['id']
 
     def add_firewall_section(self, section_name):
-        """Retrieve the ID of a firewall section from its name
+        """Add a firewall section
 
         :param str section_name: Name of the new section
 
