@@ -6,7 +6,6 @@ python:
   - "3.3"
   - "2.7"
   - "2.6"
-  - "pypy"
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: 
@@ -14,4 +13,4 @@ install:
 
 # command to run tests, e.g. python setup.py test
 script:
-  - py.test
+  - py.test test
