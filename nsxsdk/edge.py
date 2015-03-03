@@ -29,8 +29,8 @@ class Edge(object):
     @staticmethod
     def _create_basic_configuration(edge_name, datacenter_id,
                                     resourcepool_id, datastore_id,
-                                    log_level, host_id,
-                                    vmfolder_id):
+                                    log_level, host_id=None,
+                                    vmfolder_id=None):
         """Create a basic edge configuration for both logical router
         and service gateway
 
@@ -56,6 +56,8 @@ class Edge(object):
         edge_data['datacenterMoid'] = datacenter_id
         edge_data['name'] = edge_name
         edge_data['vseLogLevel'] = log_level
+        edge_data['appliances'] = {}
+        edge_data['appliances']['appliances'] = []
 
         appliance_data = {}
         appliance_data['resourcePoolId'] = resourcepool_id
@@ -148,43 +150,10 @@ class Edge(object):
             global_data['ecmp'] = ecmp
         if log:
             global_data['logging'] = {}
-            global_data['logging']['enabled'] = "true"
+            global_data['logging']['enable'] = "true"
             global_data['logging']['logLevel'] = log_level
         data = json.dumps(global_data)
         response = self.http_client.request(utils.HTTP_PUT, path, data)
-        return response
-
-    def add_bgp_peer(self, peer_ip, peer_as, weight=None,
-                     holddown_timer=None, keepalive_timer=None):
-        """Add a bgp remote peer to an existing NSX Edge.
-
-        :param str peer_ip: BGP remote peer IP address
-        :param int peer_as: BGP remote peer AS number
-        :param int weight: weight apply to routes learned from this peer
-        :param int holddown_timer: holddown timer of the BGP session
-        :param int keepalive_timer: keepalive timer of the BGP session
-
-        :return: response to the HTTP request
-        :rtype: request.Response
-
-        """
-        path = EDGE_PATH + self.edge_id + "/routing/config/bgp"
-        response = self.http_client.request(utils.HTTP_GET, path)
-        data = json.loads(response.text)
-        peer_data = {}
-        peer_data['ipAddress'] = peer_ip
-        peer_data['remoteAS'] = str(peer_as)
-        if weight is not None:
-            peer_data['weight'] = str(weight)
-        if holddown_timer is not None:
-            peer_data['holdDownTimer'] = str(holddown_timer)
-        if keepalive_timer is not None:
-            peer_data['keepAliveTimer'] = str(keepalive_timer)
-        data['bgpNeighbours']['bgpNeighbours'].append(peer_data)
-        response = self.http_client.request(
-            utils.HTTP_PUT,
-            path,
-            json.dumps(data))
         return response
 
     def configure_bgp(self, local_as, graceful_restart=False,
@@ -259,8 +228,8 @@ class LogicalRouter(Edge):
     configure VMware NSX Distributed Logical Router
     """
 
-    def __init__(self, http_client):
-        Edge.__init__(self, http_client)
+    def __init__(self, http_client, edge_id=None):
+        Edge.__init__(self, http_client, edge_id)
 
     def create(self, edge_name, datacenter_id, resourcepool_id,
                datastore_id, mgmt_portgroup_id, mgmt_ipaddr,
@@ -313,6 +282,45 @@ class LogicalRouter(Edge):
         response = self.http_client.request(utils.HTTP_POST, path, data)
         return response
 
+    def add_bgp_peer(self, peer_ip, peer_as, protocol_ip, forwarding_ip,
+                     weight=None, holddown_timer=None,
+                     keepalive_timer=None):
+        """Add a bgp remote peer to an existing NSX Edge.
+
+        :param str peer_ip: BGP remote peer IP address
+        :param int peer_as: BGP remote peer AS number
+        :param str protocol_ip: IP address used by the control VM
+            to establish BGP session
+        :param str forwarding_ip: Next for routes advertised by BGP
+        :param int weight: weight apply to routes learned from this peer
+        :param int holddown_timer: holddown timer of the BGP session
+        :param int keepalive_timer: keepalive timer of the BGP session
+
+        :return: response to the HTTP request
+        :rtype: request.Response
+
+        """
+        path = EDGE_PATH + self.edge_id + "/routing/config/bgp"
+        response = self.http_client.request(utils.HTTP_GET, path)
+        data = json.loads(response.text)
+        peer_data = {}
+        peer_data['ipAddress'] = peer_ip
+        peer_data['remoteAS'] = str(peer_as)
+        peer_data['protocolAddress'] = protocol_ip
+        peer_data['forwardingAddress'] = forwarding_ip
+        if weight is not None:
+            peer_data['weight'] = str(weight)
+        if holddown_timer is not None:
+            peer_data['holdDownTimer'] = str(holddown_timer)
+        if keepalive_timer is not None:
+            peer_data['keepAliveTimer'] = str(keepalive_timer)
+        data['bgpNeighbours']['bgpNeighbours'].append(peer_data)
+        response = self.http_client.request(
+            utils.HTTP_PUT,
+            path,
+            json.dumps(data))
+        return response
+
     def add_interface(self, interface_type, ip_addr, netmask,
                       network_id, mtu=1500):
         """Attach a new interface to an existing edge device
@@ -334,17 +342,21 @@ class LogicalRouter(Edge):
         interface_data['addressGroups']['addressGroups'] = []
         interface_data['connectedToId'] = network_id
         interface_data['mtu'] = mtu
+        interface_data['isConnected'] = "true"
         interface_data['type'] = interface_type
 
         interface_addressgroup = {}
         interface_addressgroup['primaryAddress'] = ip_addr
-        interface_addressgroup['netmask'] = netmask
+        interface_addressgroup['subnetMask'] = netmask
         interface_data['addressGroups'][
             'addressGroups'].append(interface_addressgroup)
+        interfaces = {}
+        interfaces['interfaces'] = []
+        interfaces['interfaces'].append(interface_data)
 
         path = EDGE_PATH + self.edge_id + "/interfaces/?action=patch"
 
-        data = json.dumps(interface_data)
+        data = json.dumps(interfaces)
         response = self.http_client.request(utils.HTTP_POST, path, data)
         return response
 
@@ -358,9 +370,38 @@ class ServiceGateway(Edge):
     def __init__(self, http_client, edge_id=None):
         Edge.__init__(self, http_client, edge_id)
 
+    @staticmethod
+    def _create_vnic_configuration(
+            network_id,
+            interface_index,
+            mtu,
+            interface_type,
+            ip_addr,
+            netmask):
+
+        vnic = {}
+        vnic['addressGroups'] = {}
+        vnic['addressGroups']['addressGroups'] = []
+        vnic['portgroupId'] = network_id
+        vnic['mtu'] = mtu
+        vnic['isConnected'] = "true"
+        vnic['type'] = interface_type
+        vnic['index'] = interface_index
+
+        vnic_addressgroup = {}
+        vnic_addressgroup['primaryAddress'] = ip_addr
+        vnic_addressgroup['subnetMask'] = netmask
+        vnic['addressGroups'][
+            'addressGroups'].append(vnic_addressgroup)
+        interfaces = {}
+        return vnic
+
     def create(self, edge_name, appliance_size,
                datacenter_id, resourcepool_id,
-               datastore_id, log_level="info", host_id=None,
+               datastore_id, network_id, interface_index,
+               interface_type,
+               ip_addr, netmask, mtu=1500,
+               log_level="info", host_id=None,
                vmfolder_id=None):
         """Deploy a NSX Edge Service Gateway with a basic configuration
 
@@ -390,15 +431,58 @@ class ServiceGateway(Edge):
                                                      datacenter_id,
                                                      resourcepool_id,
                                                      datastore_id,
+                                                     log_level,
                                                      host_id,
-                                                     vmfolder_id,
-                                                     log_level)
+                                                     vmfolder_id)
         edge_data['appliances']['applianceSize'] = appliance_size
+        edge_data['vnics'] = {}
+        edge_data['vnics']['vnics'] = []
+        edge_data['vnics']['vnics'].append(
+            ServiceGateway._create_vnic_configuration(
+                network_id,
+                interface_index,
+                mtu,
+                interface_type,
+                ip_addr,
+                netmask))
         data = json.dumps(edge_data)
         response = self.http_client.request(utils.HTTP_POST, path, data)
         return response
 
-    def add_interface(self, interface_type, ip_addr, netmask,
+    def add_bgp_peer(self, peer_ip, peer_as, weight=None, holddown_timer=None,
+                     keepalive_timer=None):
+        """Add a bgp remote peer to an existing NSX Edge.
+
+        :param str peer_ip: BGP remote peer IP address
+        :param int peer_as: BGP remote peer AS number
+        :param int weight: weight apply to routes learned from this peer
+        :param int holddown_timer: holddown timer of the BGP session
+        :param int keepalive_timer: keepalive timer of the BGP session
+
+        :return: response to the HTTP request
+        :rtype: request.Response
+
+        """
+        path = EDGE_PATH + self.edge_id + "/routing/config/bgp"
+        response = self.http_client.request(utils.HTTP_GET, path)
+        data = json.loads(response.text)
+        peer_data = {}
+        peer_data['ipAddress'] = peer_ip
+        peer_data['remoteAS'] = str(peer_as)
+        if weight is not None:
+            peer_data['weight'] = str(weight)
+        if holddown_timer is not None:
+            peer_data['holdDownTimer'] = str(holddown_timer)
+        if keepalive_timer is not None:
+            peer_data['keepAliveTimer'] = str(keepalive_timer)
+        data['bgpNeighbours']['bgpNeighbours'].append(peer_data)
+        response = self.http_client.request(
+            utils.HTTP_PUT,
+            path,
+            json.dumps(data))
+        return response
+
+    def add_interface(self, interface_type, interface_index, ip_addr, netmask,
                       network_id, mtu=1500):
         """Attach a new interface to an existing edge device
 
@@ -414,21 +498,19 @@ class ServiceGateway(Edge):
         :rtype: requests.Response
 
         """
-        interface_data = {}
-        interface_data['addressGroups'] = {}
-        interface_data['addressGroups']['addressGroups'] = []
-        interface_data['connectedToId'] = network_id
-        interface_data['mtu'] = mtu
-        interface_data['type'] = interface_type
-
-        interface_addressgroup = {}
-        interface_addressgroup['primaryAddress'] = ip_addr
-        interface_addressgroup['netmask'] = netmask
-        interface_data['addressGroups'][
-            'addressGroups'].append(interface_addressgroup)
+        vnic_data = ServiceGateway._create_vnic_configuration(
+            network_id,
+            interface_index,
+            mtu,
+            interface_type,
+            ip_addr,
+            netmask)
+        vnics = {}
+        vnics['vnics'] = []
+        vnics['vnics'].append(vnic_data)
 
         path = EDGE_PATH + self.edge_id + "/vnics/?action=patch"
 
-        data = json.dumps(interface_data)
+        data = json.dumps(vnics)
         response = self.http_client.request(utils.HTTP_POST, path, data)
         return response

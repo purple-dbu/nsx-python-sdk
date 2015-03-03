@@ -115,5 +115,5 @@ class LogicalSwitch(object):
             path = LS_PATH + "virtualwires"
         response = self.http_client.request(utils.HTTP_GET, path)
         jsondata = json.loads(response.text)
-        transportzones = jsondata['dataPage']['data']
-        return transportzones
+        logicalswitches = jsondata['dataPage']['data']
+        return logicalswitches
